@@ -14,7 +14,7 @@ mvn test -Dtest=CucumberTest
 
 ## Failure Diagnosis Routine
 When a test fails, do NOT dump full Maven logs into context. Instead:
-1. Check `target/surefire-reports/cat.udl.eps.softarch.demo.CucumberTest.txt`.
+1. Check `target/surefire-reports/com.frivlegion.platform.CucumberTest.txt`.
 2. Extract:
    - Failing Scenario Name
    - Exact step that failed

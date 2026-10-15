@@ -10,11 +10,11 @@ This skill guides AI agents to generate Spring Data REST lifecycle event handler
 ## EventHandler Structure (`@RepositoryEventHandler`)
 
 ```java
-package cat.udl.eps.softarch.demo.handler;
+package com.frivlegion.platform.handler;
 
-import cat.udl.eps.softarch.demo.domain.<Entity>;
-import cat.udl.eps.softarch.demo.domain.User;
-import cat.udl.eps.softarch.demo.repository.<Entity>Repository;
+import com.frivlegion.platform.domain.<Entity>;
+import com.frivlegion.platform.domain.User;
+import com.frivlegion.platform.repository.<Entity>Repository;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

@@ -1,19 +1,19 @@
-# Spring Boot Template
+# FrivLegion
 
-Template for a Spring Boot project including Spring REST, HATEOAS, JPA, etc. Additional details: [HELP.md](HELP.md)
+FrivLegion is a centralized web platform for casual minigames. Additional details: [HELP.md](HELP.md)
 
-[![Open Issues](https://img.shields.io/github/issues-raw/UdL-EPS-SoftArch/spring-template?logo=github)](https://github.com/orgs/UdL-EPS-SoftArch/projects/12)
-[![CI/CD](https://github.com/UdL-EPS-SoftArch/spring-template/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UdL-EPS-SoftArch/spring-template/actions)
-[![Cucumber Reports](https://img.shields.io/badge/cucumber-reports-brightgreen)](https://UdL-EPS-SoftArch.github.io/spring-template/reports/cucumber-report.html)
-[![Deployment status](https://img.shields.io/uptimerobot/status/m792691238-18db2a43adf8d8ded474f885)](https://spring-template.fly.dev/records)
+[![Open Issues](https://img.shields.io/github/issues-raw/UdL-EPS-SoftArch/frivlegion?logo=github)](https://github.com/orgs/UdL-EPS-SoftArch/projects/12)
+[![CI/CD](https://github.com/UdL-EPS-SoftArch/frivlegion/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/UdL-EPS-SoftArch/frivlegion/actions)
+[![Cucumber Reports](https://img.shields.io/badge/cucumber-reports-brightgreen)](https://UdL-EPS-SoftArch.github.io/frivlegion/reports/cucumber-report.html)
+[![Deployment status](https://img.shields.io/uptimerobot/status/m792691238-18db2a43adf8d8ded474f885)](https://frivlegion.fly.dev/records)
 
 ## Vision
 
-**For** students learning Spring Boot and REST API development
-**who** want to practice backend engineering with modern tools
-**the project** is a template project
-**that** provides user registration, authentication, and secured record management with ownership-based access control
-**Unlike** other templates, this one is designed for iterative feature building with BDD (Cucumber) tests driving the development
+**For** casual players
+**who** want a single place to discover and play quick minigames
+**the project** is a centralized web platform for casual minigames
+**that** provides user accounts with authentication and ownership-based access control over platform data
+**Unlike** scattered standalone game sites, FrivLegion unifies many minigames under one account-driven platform
 
 ## Features per Stakeholder
 

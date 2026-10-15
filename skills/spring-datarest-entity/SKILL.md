@@ -10,7 +10,7 @@ Guide AI agents to generate JPA domain entities and REST Repositories adhering t
 ## Entity Structure
 
 ```java
-package cat.udl.eps.softarch.demo.domain;
+package com.frivlegion.platform.domain;
 
 import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -60,10 +60,10 @@ public class <Entity> extends UriEntity<Long> {
 ## Repository Structure
 
 ```java
-package cat.udl.eps.softarch.demo.repository;
+package com.frivlegion.platform.repository;
 
-import cat.udl.eps.softarch.demo.domain.<Entity>;
-import cat.udl.eps.softarch.demo.domain.User;
+import com.frivlegion.platform.domain.<Entity>;
+import com.frivlegion.platform.domain.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
