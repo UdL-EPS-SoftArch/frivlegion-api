@@ -54,8 +54,8 @@ jobs:
           context: .
           push: true
           tags: |
-            udlepssoftarch/spring-template:${{ github.sha }}
-            udlepssoftarch/spring-template:latest
+            udlepssoftarch/frivlegion:${{ github.sha }}
+            udlepssoftarch/frivlegion:latest
       - name: Stage Cucumber Report for Pages
         if: github.ref == 'refs/heads/main'
         run: mkdir -p pages-site/reports && cp target/cucumber-report.html pages-site/reports/

@@ -160,8 +160,8 @@ Before starting Stage 2, drop files from Stage 1 to free up tokens:
    ```
    /read skills/sdd-cucumber-steps/SKILL.md
    /read src/test/resources/features/ManageTag.feature  # Needed just if it was previously dropped
-   /read src/test/java/cat/udl/eps/softarch/demo/steps/StepDefs.java
-   /add src/test/java/cat/udl/eps/softarch/demo/steps/ManageTagStepDefs.java
+   /read src/test/java/com/frivlegion/platform/steps/StepDefs.java
+   /add src/test/java/com/frivlegion/platform/steps/ManageTagStepDefs.java
    ```
 
 3. **Prompt Aider**:
@@ -176,17 +176,17 @@ Drop previous step definitions from session context:
    ```
    /drop skills/sdd-cucumber-steps/SKILL.md
    /drop src/test/resources/features/ManageTag.feature
-   /drop src/test/java/cat/udl/eps/softarch/demo/steps/StepDefs.java
-   /drop src/test/java/cat/udl/eps/softarch/demo/steps/ManageTagStepDefs.java
+   /drop src/test/java/com/frivlegion/platform/steps/StepDefs.java
+   /drop src/test/java/com/frivlegion/platform/steps/ManageTagStepDefs.java
    ```
 
 2. **Load entity skill and reference code**:
    ```
    /read skills/spring-datarest-entity/SKILL.md
-   /add src/main/java/cat/udl/eps/softarch/demo/domain/Record.java
-   /add src/main/java/cat/udl/eps/softarch/demo/repository/RecordRepository.java
-   /add src/main/java/cat/udl/eps/softarch/demo/domain/Tag.java
-   /add src/main/java/cat/udl/eps/softarch/demo/repository/TagRepository.java
+   /add src/main/java/com/frivlegion/platform/domain/Record.java
+   /add src/main/java/com/frivlegion/platform/repository/RecordRepository.java
+   /add src/main/java/com/frivlegion/platform/domain/Tag.java
+   /add src/main/java/com/frivlegion/platform/repository/TagRepository.java
    ```
 
 3. **Prompt Aider**:
@@ -200,17 +200,17 @@ Drop domain entity files from session context:
 1. **Reset context for Stage 4**:
    ```
    /drop skills/spring-datarest-entity/SKILL.md
-   /drop src/main/java/cat/udl/eps/softarch/demo/domain/Record.java
-   /drop src/main/java/cat/udl/eps/softarch/demo/domain/RecordRepository.java
+   /drop src/main/java/com/frivlegion/platform/domain/Record.java
+   /drop src/main/java/com/frivlegion/platform/domain/RecordRepository.java
    ```
 
 2. **Load repository skill and reference repository**:
    ```
    /read skills/spring-datarest-handler/SKILL.md
-   /read src/main/java/cat/udl/eps/softarch/demo/domain/Tag.java
-   /read src/main/java/cat/udl/eps/softarch/demo/domain/TagRepository.java
-   /read src/main/java/cat/udl/eps/softarch/demo/repository/RecordEventHandler.java
-   /add src/main/java/cat/udl/eps/softarch/demo/handler/TagEventHandler.java
+   /read src/main/java/com/frivlegion/platform/domain/Tag.java
+   /read src/main/java/com/frivlegion/platform/domain/TagRepository.java
+   /read src/main/java/com/frivlegion/platform/repository/RecordEventHandler.java
+   /add src/main/java/com/frivlegion/platform/handler/TagEventHandler.java
    ```
 
 3. **Prompt Aider**:
@@ -232,8 +232,8 @@ The output is also available as an HTML report at `target/cucumber-report.html`.
    ```
    /clear
    /read skills/sdd-bdd-verifier/SKILL.md
-   /read target/surefire-reports/cat.udl.eps.softarch.demo.CucumberTest.txt
-   /add src/test/java/cat/udl/eps/softarch/demo/steps/ManageTagStepDefs.java
+   /read target/surefire-reports/com.frivlegion.platform.CucumberTest.txt
+   /add src/test/java/com/frivlegion/platform/steps/ManageTagStepDefs.java
    ```
 
 3. **Prompt Aider**:
