@@ -50,7 +50,7 @@ public class Record extends UriEntity<Long> {
 
     @ManyToOne
     @JsonIdentityReference(alwaysAsId = true)
-    private User ownedBy;
+    private Player ownedBy;
 
 
 }

@@ -27,10 +27,20 @@ public class WebSecurityConfig {
     @Bean
     protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((auth) -> auth
+                .requestMatchers(HttpMethod.GET, "/games", "/games/**", "/scores", "/scores/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/scores").authenticated()
+                .requestMatchers("/gameStates", "/gameStates/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/players", "/players/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/players").anonymous()
+                .requestMatchers(HttpMethod.POST, "/players/**").denyAll()
+                .requestMatchers(HttpMethod.PUT, "/players", "/players/**").denyAll()
+                .requestMatchers(HttpMethod.PATCH, "/players", "/players/**").denyAll()
+                .requestMatchers(HttpMethod.DELETE, "/players", "/players/**").denyAll()
+                .requestMatchers(HttpMethod.POST, "/games", "/games/**").denyAll()
+                .requestMatchers(HttpMethod.PUT, "/games", "/games/**").denyAll()
+                .requestMatchers(HttpMethod.PATCH, "/games", "/games/**").denyAll()
+                .requestMatchers(HttpMethod.DELETE, "/games", "/games/**").denyAll()
                 .requestMatchers(HttpMethod.GET, "/identity").authenticated()
-                .requestMatchers(HttpMethod.GET, "/users").authenticated()
-                .requestMatchers(HttpMethod.POST, "/users").anonymous()
-                .requestMatchers(HttpMethod.POST, "/users/*").denyAll()
                 .requestMatchers(HttpMethod.GET, "/records").permitAll()    // Allow listing public records
                 .requestMatchers(HttpMethod.GET, "/records/*").permitAll()  // Allow retrieving public records
                 .requestMatchers(HttpMethod.GET, "/*/*").authenticated()
