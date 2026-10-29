@@ -1,6 +1,6 @@
 package com.frivlegion.platform.controller;
 
-import com.frivlegion.platform.domain.User;
+import com.frivlegion.platform.domain.Player;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
 import org.springframework.data.rest.webmvc.PersistentEntityResource;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
@@ -15,8 +15,8 @@ public class IdentityController {
   public @ResponseBody
   PersistentEntityResource getAuthenticatedUserIdentity(
       PersistentEntityResourceAssembler resourceAssembler) {
-    User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Player player = (Player) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-    return resourceAssembler.toFullResource(user);
+    return resourceAssembler.toFullResource(player);
   }
 }

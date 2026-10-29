@@ -1,7 +1,7 @@
 package com.frivlegion.platform.repository;
 
+import com.frivlegion.platform.domain.Player;
 import com.frivlegion.platform.domain.Record;
-import com.frivlegion.platform.domain.User;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface RecordRepository extends CrudRepository<Record, Long>, PagingAndSortingRepository<Record, Long> {
 
     String OWNERSHIP_CLAUSE =
-        "r.ownedBy.id = ?#{authentication.name} " +
+        "r.ownedBy.username = ?#{authentication.name} " +
         "OR r.status = 'PUBLIC' " +
         "OR ?#{hasRole('ADMIN')} = true";
 
@@ -30,7 +30,7 @@ public interface RecordRepository extends CrudRepository<Record, Long>, PagingAn
     Optional<Record> findById(@Param("id") Long id);
 
     @Query("SELECT r FROM Record r WHERE r.ownedBy = :user AND (" + OWNERSHIP_CLAUSE + ")")
-    Page<Record> findByOwnedBy(@Param("user") User owner, Pageable pageable);
+    Page<Record> findByOwnedBy(@Param("user") Player owner, Pageable pageable);
 
     List<Record> findByName(String name);
 }

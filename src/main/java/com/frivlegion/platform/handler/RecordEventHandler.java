@@ -1,7 +1,7 @@
 package com.frivlegion.platform.handler;
 
+import com.frivlegion.platform.domain.Player;
 import com.frivlegion.platform.domain.Record;
-import com.frivlegion.platform.domain.User;
 import com.frivlegion.platform.repository.RecordRepository;
 import org.springframework.data.rest.core.annotation.*;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,7 +18,7 @@ public class RecordEventHandler {
 
     @HandleBeforeCreate
     public void handleRecordPreCreate(Record record) {
-        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Player owner = currentPlayer();
         record.setOwnedBy(owner);
         if (record.getStatus() == null) {
             record.setStatus(Record.Status.PRIVATE);
@@ -27,9 +27,13 @@ public class RecordEventHandler {
 
     @HandleBeforeSave
     public void handleRecordPreSave(Record record) {
-        User owner = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Player owner = currentPlayer();
         if (!owner.getUsername().equals(record.getOwnedBy().getUsername())) {
             throw new SecurityException("Only the owner can modify the record");
         }
+    }
+
+    private Player currentPlayer() {
+        return (Player) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
