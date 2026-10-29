@@ -1,8 +1,23 @@
+FROM maven:3.9-eclipse-temurin-21 AS build
+
+WORKDIR /workspace
+
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+
+COPY src ./src
+RUN mvn -B -q -Dmaven.test.skip=true package
+
 FROM eclipse-temurin:21-jre
 
-WORKDIR /home/app
+WORKDIR /app
 
-ADD ./target/*.jar ./app.jar
+RUN groupadd --system app && useradd --system --gid app app
+
+COPY --from=build --chown=app:app /workspace/target/*.jar app.jar
+
+USER app
 
 EXPOSE 8080
-CMD java $JAVA_OPTS -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE -jar app.jar
+
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
