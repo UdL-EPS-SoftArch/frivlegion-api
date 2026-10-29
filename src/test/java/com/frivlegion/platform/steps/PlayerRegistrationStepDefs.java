@@ -2,36 +2,34 @@ package com.frivlegion.platform.steps;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.frivlegion.platform.domain.User;
-import com.frivlegion.platform.repository.UserRepository;
+import com.frivlegion.platform.domain.Player;
+import com.frivlegion.platform.repository.PlayerRepository;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.json.JSONObject;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class PlayerRegistrationStepDefs {
     private final StepDefs stepDefs;
-    private final UserRepository userRepository;
+    private final PlayerRepository playerRepository;
 
     private String registrationUsername;
     private String registrationEmail;
     private String registrationPassword;
 
-    public PlayerRegistrationStepDefs(StepDefs stepDefs, UserRepository userRepository) {
+    public PlayerRegistrationStepDefs(StepDefs stepDefs, PlayerRepository playerRepository) {
         this.stepDefs = stepDefs;
-        this.userRepository = userRepository;
+        this.playerRepository = playerRepository;
     }
 
     @Given("^an unauthenticated casual visitor is on the platform$")
@@ -45,21 +43,18 @@ public class PlayerRegistrationStepDefs {
         this.registrationUsername = "playerTest";
         this.registrationEmail = "playertest@example.com";
         this.registrationPassword = "securePass123";
-        userRepository.findById(registrationUsername).ifPresent(userRepository::delete);
+        playerRepository.findByUsername(registrationUsername).ifPresent(playerRepository::delete);
     }
 
     @When("^they submit the registration form$")
     public void theySubmitTheRegistrationForm() throws Throwable {
-        User user = new User();
-        user.setId(registrationUsername);
-        user.setEmail(registrationEmail);
-
         stepDefs.result = stepDefs.mockMvc.perform(
-                        post("/users")
+                        post("/players")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new JSONObject(
-                                        stepDefs.mapper.writeValueAsString(user)
-                                ).put("password", registrationPassword).toString())
+                                .content(stepDefs.mapper.writeValueAsString(Map.of(
+                                        "username", registrationUsername,
+                                        "email", registrationEmail,
+                                        "password", registrationPassword)))
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .with(AuthenticationStepDefs.authenticate()))
@@ -69,7 +64,7 @@ public class PlayerRegistrationStepDefs {
     @Then("^the system should create their player account$")
     public void theSystemShouldCreateTheirPlayerAccount() throws Throwable {
         stepDefs.result.andExpect(status().isCreated());
-        assertTrue(userRepository.existsById(registrationUsername));
+        assertTrue(playerRepository.existsByUsername(registrationUsername));
     }
 
     @And("^the system should automatically authenticate them by generating a JWT token$")
@@ -81,28 +76,25 @@ public class PlayerRegistrationStepDefs {
     public void theUsernameAlreadyExistsInTheDatabase(String username) {
         AuthenticationStepDefs.currentUsername = null;
         AuthenticationStepDefs.currentPassword = null;
-        if (!userRepository.existsById(username)) {
-            User user = new User();
-            user.setEmail(username.toLowerCase() + "@sample.app");
-            user.setId(username);
-            user.setPassword("password123");
-            user.encodePassword();
-            userRepository.save(user);
+        if (!playerRepository.existsByUsername(username)) {
+            Player player = new Player();
+            player.setUsername(username);
+            player.setEmail(username.toLowerCase() + "@sample.app");
+            player.setRawPassword("password123");
+            player.encodePassword();
+            playerRepository.save(player);
         }
     }
 
     @When("^a visitor attempts to register using the username \"([^\"]*)\"$")
     public void aVisitorAttemptsToRegisterUsingTheUsername(String username) throws Throwable {
-        User user = new User();
-        user.setId(username);
-        user.setEmail(username.toLowerCase() + "@example.com");
-
         stepDefs.result = stepDefs.mockMvc.perform(
-                        post("/users")
+                        post("/players")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(new JSONObject(
-                                        stepDefs.mapper.writeValueAsString(user)
-                                ).put("password", "newpassword123").toString())
+                                .content(stepDefs.mapper.writeValueAsString(Map.of(
+                                        "username", username,
+                                        "email", username.toLowerCase() + "@example.com",
+                                        "password", "newpassword123")))
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .accept(MediaType.APPLICATION_JSON)
                                 .with(AuthenticationStepDefs.authenticate()))

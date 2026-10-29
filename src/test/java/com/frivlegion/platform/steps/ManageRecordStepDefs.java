@@ -1,9 +1,9 @@
 package com.frivlegion.platform.steps;
 
 import com.frivlegion.platform.domain.Record;
-import com.frivlegion.platform.domain.User;
+import com.frivlegion.platform.domain.Player;
 import com.frivlegion.platform.repository.RecordRepository;
-import com.frivlegion.platform.repository.UserRepository;
+import com.frivlegion.platform.repository.PlayerRepository;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -28,13 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ManageRecordStepDefs {
     private final StepDefs stepDefs;
-    private final UserRepository userRepository;
+    private final PlayerRepository playerRepository;
     private final RecordRepository recordRepository;
 
-    public ManageRecordStepDefs(StepDefs stepDefs, UserRepository userRepository, 
+    public ManageRecordStepDefs(StepDefs stepDefs, PlayerRepository playerRepository,
         RecordRepository recordRepository) {
         this.stepDefs = stepDefs;
-        this.userRepository = userRepository;
+        this.playerRepository = playerRepository;
         this.recordRepository = recordRepository;
     }
 
@@ -42,7 +42,7 @@ public class ManageRecordStepDefs {
     public void thereIsARecordWithNameOwnedBy(String name, String ownerUsername) {
         Record record = new Record();
         record.setName(name);
-        User owner = userRepository.findById(ownerUsername).orElseThrow();
+        Player owner = playerRepository.findByUsername(ownerUsername).orElseThrow();
         record.setOwnedBy(owner);
         record.setStatus(Record.Status.PRIVATE);
         recordRepository.save(record);
@@ -92,7 +92,7 @@ public class ManageRecordStepDefs {
 
     @Then("The list of records owned by {string} includes {int} named {string}")
     public void theListOfRecordsOwnedByIncludesNamed(String username, int count, String resourceName) throws Throwable {
-        User owner = userRepository.findById(username).orElseThrow();
+        Player owner = playerRepository.findByUsername(username).orElseThrow();
         stepDefs.result = stepDefs.mockMvc.perform(
                 get("/records/search/findByOwnedBy?user={userUri}", owner.getUri())
                     .accept(MediaType.APPLICATION_JSON)
