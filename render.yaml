@@ -1,0 +1,17 @@
+# Render Infrastructure as Code - FrivLegion
+# Deploy: https://render.com/deploy?repo=UdL-EPS-SoftArch/frivlegion
+
+services:
+  - type: web
+    name: frivlegion
+    runtime: docker
+    plan: free
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: DEFAULT_PASSWORD
+        value: password
+      - key: DATABASE_URL
+        fromSecret: frivlegion_neon_database_url

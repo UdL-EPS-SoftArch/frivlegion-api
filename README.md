@@ -73,4 +73,34 @@ For complete stage-by-stage instructions and command workflows, see **[AI_DEVELO
 - **`skills/sdd-cucumber-steps/SKILL.md`**: Implement MockMvc step definition classes extending `StepDefs.java`.
 - **`skills/spring-datarest-entity/SKILL.md`**: Create JPA `@Entity` classes extending `UriEntity` and `@RepositoryRestResource` interfaces with SpEL row-level security queries.
 - **`skills/spring-datarest-hander/SKILL.md`**: Create lifecycle event handlers based on the `@RepositoryEventHandler`.
-- **`skills/sdd-bdd-verifier/SKILL.md`**: Run `mvn test -Dtest=CucumberTest` and analyze test failure summaries.
+- **`skills/sdd-bdd-verifier/SKILL.md`**: Run `mvn test -Dtest=CucumberTest` and analyze test failure summaries. 
+
+## Deployment
+
+### Render
+
+The web application is containerized (Docker) and can be deployed on [Render](https://render.com) using the [`render.yaml`](render.yaml) infrastructure-as-code file at the repository root.
+
+The service is connected to a **Neon** PostgreSQL database through the `DATABASE_URL` environment variable.
+
+**Required environment variables:**
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | Neon PostgreSQL connection string (e.g. `postgresql://<user>:<password>@<host>/<database>`). |
+| `SPRING_PROFILES_ACTIVE` | Yes | `postgres` (activates the datasource that reads the `DATABASE_URL` env var). |
+| `DEFAULT_PASSWORD` | No | Default password for the seeded player (default: `password`). |
+| `PORT` | No | Port the server listens on (default: `8080`). |
+
+**Initial database setup:** Flyway automatically applies the initial schema from `src/main/resources/db/migration/V1__Initial_schema.sql` against the Neon database on application startup.
+
+**Deploy steps:**
+1. Create a Neon PostgreSQL database.
+2. Create a new web service on Render from the `render.yaml` blueprint (or manually create a Docker web service).
+3. Set the `frivlegion_neon_database_url` secret with the Neon connection string.
+4. Deploy the service.
+
+### Fly.io
+
+The current production deployment target is [Fly.io](https://fly.io) via the [`fly.toml`](fly.toml) file, deploying the Docker container to `frivlegion.fly.dev`.
+
