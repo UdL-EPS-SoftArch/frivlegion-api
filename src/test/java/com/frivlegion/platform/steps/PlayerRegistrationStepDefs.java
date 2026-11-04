@@ -2,6 +2,7 @@ package com.frivlegion.platform.steps;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -49,7 +50,7 @@ public class PlayerRegistrationStepDefs {
     @When("^they submit the registration form$")
     public void theySubmitTheRegistrationForm() throws Throwable {
         stepDefs.result = stepDefs.mockMvc.perform(
-                        post("/players")
+                        post("/auth/register")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(stepDefs.mapper.writeValueAsString(Map.of(
                                         "username", registrationUsername,
@@ -69,7 +70,9 @@ public class PlayerRegistrationStepDefs {
 
     @And("^the system should automatically authenticate them by generating a JWT token$")
     public void theSystemShouldAutomaticallyAuthenticateThemByGeneratingAJWTToken() throws Throwable {
-        stepDefs.result.andDo(print());
+        stepDefs.result.andExpect(status().isCreated())
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.tokenType", is("Bearer")));
     }
 
     @Given("^the username \"([^\"]*)\" already exists in the database$")
@@ -89,7 +92,7 @@ public class PlayerRegistrationStepDefs {
     @When("^a visitor attempts to register using the username \"([^\"]*)\"$")
     public void aVisitorAttemptsToRegisterUsingTheUsername(String username) throws Throwable {
         stepDefs.result = stepDefs.mockMvc.perform(
-                        post("/players")
+                        post("/auth/register")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(stepDefs.mapper.writeValueAsString(Map.of(
                                         "username", username,

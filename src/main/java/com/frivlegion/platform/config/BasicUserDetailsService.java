@@ -16,8 +16,9 @@ public class BasicUserDetailsService implements UserDetailsService {
   }
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    return playerRepository.findByUsername(username)
-        .orElseThrow(() -> new UsernameNotFoundException("Player not found: " + username));
+  public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+    return playerRepository.findByUsername(usernameOrEmail)
+        .or(() -> playerRepository.findByEmail(usernameOrEmail))
+        .orElseThrow(() -> new UsernameNotFoundException("Player not found: " + usernameOrEmail));
   }
 }
