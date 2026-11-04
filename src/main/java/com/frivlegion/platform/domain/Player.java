@@ -59,6 +59,18 @@ public class Player extends UriEntity<Long> implements UserDetails {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
+    private boolean accountNonExpired = true;
+
+    @Column(nullable = false)
+    private boolean accountNonLocked = true;
+
+    @Column(nullable = false)
+    private boolean credentialsNonExpired = true;
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
     public void encodePassword() {
         if (rawPassword != null && !rawPassword.isBlank()) {
             this.passwordHash = passwordEncoder.encode(rawPassword);
@@ -87,24 +99,24 @@ public class Player extends UriEntity<Long> implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isAccountNonExpired() {
-        return true;
+        return accountNonExpired;
     }
 
     @Override
     @JsonIgnore
     public boolean isAccountNonLocked() {
-        return true;
+        return accountNonLocked;
     }
 
     @Override
     @JsonIgnore
     public boolean isCredentialsNonExpired() {
-        return true;
+        return credentialsNonExpired;
     }
 
     @Override
     @JsonIgnore
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }
