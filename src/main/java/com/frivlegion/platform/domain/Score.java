@@ -26,6 +26,7 @@ public class Score extends UriEntity<Long> {
     @NotNull
     @ManyToOne(optional = false)
     @JsonIdentityReference(alwaysAsId = true)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Player player;
 
     @NotNull
