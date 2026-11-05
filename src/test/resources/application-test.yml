@@ -1,5 +1,8 @@
 allowed-origins: http://localhost:3000
 default-password: password
+jwt:
+  secret: test-secret-key-that-is-long-enough-for-hmac-sha-signing-2026
+  expiration-ms: 3600000
 
 logging:
     level:

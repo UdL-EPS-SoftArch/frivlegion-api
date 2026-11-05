@@ -51,6 +51,7 @@ public class StepDefs {
                 .webAppContextSetup(this.wac)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+        AuthenticationStepDefs.setMockMvc(this.mockMvc);
     }
 
     @Then("^The response code is (\\d+)$")

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -70,6 +71,7 @@ public class UserAuthenticationStepDefs {
     public void generateAJwtTokenForTheSession() throws Throwable {
         stepDefs.result.andExpect(status().isOk())
             .andExpect(jsonPath("$.username").exists());
+        assertNotNull(AuthenticationStepDefs.currentToken);
     }
 
     @Then("redirect the user to the Home page")

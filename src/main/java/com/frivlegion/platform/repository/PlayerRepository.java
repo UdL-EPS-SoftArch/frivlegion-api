@@ -12,5 +12,9 @@ public interface PlayerRepository extends CrudRepository<Player, Long>, PagingAn
 
     Optional<Player> findByUsername(String username);
 
+    Optional<Player> findByEmail(String email);
+
     boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
 }
