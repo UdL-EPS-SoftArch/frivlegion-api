@@ -1,5 +1,4 @@
 allowed-origins: http://localhost:3000
-default-password: password
 jwt:
   secret: ${JWT_SECRET:frivlegion-development-secret-key-change-me-before-production-2026}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}

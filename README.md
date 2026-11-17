@@ -58,9 +58,12 @@ classDiagram
     User "1" <-- "*" Record: ownedBy
 ```
 
-## Score Ownership
+## Profiles and Default Data
 
-Scores are created for the authenticated player; the client cannot set or change the `player` field. Owners may update or delete their own scores, while attempts to modify another player's score return `403`.
+- `dev` and `test` seed a `player` account using `default-password`, overridable with `DEFAULT_PASSWORD`.
+- Run locally with the dev profile: `mvn spring-boot:run -Dspring-boot.run.profiles=dev`.
+- The production profile (`flyio`) seeds no accounts and does not define a default password.
+- In production, create the first account through `POST /auth/register`. Administrative roles and provisioning are tracked separately in `05-github-issues.md` (ISSUE-6).
 
 ## AI-Assisted Spec-Driven Development (SDD)
 

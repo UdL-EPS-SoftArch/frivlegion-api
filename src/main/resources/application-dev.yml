@@ -1,0 +1,1 @@
+default-password: ${DEFAULT_PASSWORD:password}

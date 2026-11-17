@@ -5,29 +5,32 @@ import com.frivlegion.platform.repository.PlayerRepository;
 import com.frivlegion.platform.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import jakarta.annotation.PostConstruct;
 
-import java.util.Arrays;
-
 @Configuration
+@Profile({"dev", "test"})
 public class DBInitialization {
     @Value("${default-password}")
     String defaultPassword;
 
-    @Value("${spring.profiles.active:}")
-    private String activeProfiles;
+    private final Environment environment;
 
     private final RecordRepository recordRepository;
     private final PlayerRepository playerRepository;
 
-    public DBInitialization(PlayerRepository playerRepository, RecordRepository recordRepository) {
+    public DBInitialization(
+            Environment environment,
+            PlayerRepository playerRepository,
+            RecordRepository recordRepository) {
+        this.environment = environment;
         this.playerRepository = playerRepository;
         this.recordRepository = recordRepository;
     }
 
     @PostConstruct
     public void initializeDatabase() {
-        // Default user
         if (!playerRepository.existsByUsername("player")) {
             Player player = new Player();
             player.setUsername("player");
@@ -36,8 +39,7 @@ public class DBInitialization {
             player.encodePassword();
             playerRepository.save(player);
         }
-        if (Arrays.asList(activeProfiles.split(",")).contains("test")) {
-            // Testing instances
+        if (environment.matchesProfiles("test")) {
             if (!playerRepository.existsByUsername("test")) {
                 Player player = new Player();
                 player.setUsername("test");
