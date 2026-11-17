@@ -58,6 +58,10 @@ classDiagram
     User "1" <-- "*" Record: ownedBy
 ```
 
+## Score Ownership
+
+Scores are created for the authenticated player; the client cannot set or change the `player` field. Owners may update or delete their own scores, while attempts to modify another player's score return `403`.
+
 ## AI-Assisted Spec-Driven Development (SDD)
 
 This repository serves as a starter template for **AI-Assisted Spec-Driven Development (SDD)** with **Spring Data REST** and **Cucumber BDD**.
