@@ -65,6 +65,30 @@ classDiagram
 - The production profile (`flyio`) seeds no accounts and does not define a default password.
 - In production, create the first account through `POST /auth/register`. Administrative roles and provisioning are tracked separately in `05-github-issues.md` (ISSUE-6).
 
+## CI/CD and Testing
+
+The GitHub Actions workflow (`.github/workflows/ci-cd.yml`) runs on every pull request to `main` and on pushes to `main`. Pull requests are automatically validated by compiling the project and running the automated tests (including Cucumber BDD scenarios) against the initialized database schema before merge/deploy steps.
+
+### Database initialization
+
+- Database schema is managed with Flyway migrations in `src/main/resources/db/migration/` (initial script: `V1__init_schema.sql`).
+- Migrations run automatically on application/test startup, so the CI environment initializes the basic schema before executing tests.
+
+### Testing commands
+
+```bash
+# Lint/compile check
+mvn -B -DskipTests compile
+
+# Run all automated tests (JUnit + Cucumber BDD)
+mvn -B test
+
+# Run only Cucumber behavior tests
+mvn -B test -Dtest=CucumberTest
+```
+
+The Cucumber HTML report is generated at `target/cucumber-report.html`.
+
 ## AI-Assisted Spec-Driven Development (SDD)
 
 This repository serves as a starter template for **AI-Assisted Spec-Driven Development (SDD)** with **Spring Data REST** and **Cucumber BDD**.
