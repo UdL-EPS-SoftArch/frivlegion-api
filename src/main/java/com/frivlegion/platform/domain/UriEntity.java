@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.io.Serializable;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import org.atteo.evo.inflector.English;
 import org.springframework.data.domain.Persistable;
@@ -17,6 +18,7 @@ public abstract class UriEntity<ID extends Serializable> implements Persistable<
     /**
      * The uri string value.
      */
+    @Transient
     @SuppressWarnings("unused")
     private String uri;
     /**
