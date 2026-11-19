@@ -16,7 +16,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class FlywaySchemaStepDefs {
@@ -63,13 +63,13 @@ public class FlywaySchemaStepDefs {
         assertEquals(1, applied);
     }
 
-    @Then("every entity table has a uri column")
-    public void everyEntityTableHasAUriColumn() {
+    @Then("no entity table persists a uri column")
+    public void noEntityTablePersistsAUriColumn() {
         for (String table : List.of("player", "game", "game_state", "record", "score")) {
             List<String> columns = jdbcTemplate.queryForList(
                     "select column_name from information_schema.columns where table_name = ?",
                     String.class, table);
-            assertTrue(columns.contains("uri"), () -> table + " is missing the uri column");
+            assertFalse(columns.contains("uri"), () -> table + " still persists the uri column");
         }
     }
 
