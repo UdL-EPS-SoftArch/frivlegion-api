@@ -1,1 +1,5 @@
 default-password: ${DEFAULT_PASSWORD:password}
+
+spring:
+  flyway:
+    enabled: false
