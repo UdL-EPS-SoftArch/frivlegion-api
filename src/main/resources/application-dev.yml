@@ -3,3 +3,6 @@ default-password: ${DEFAULT_PASSWORD:password}
 spring:
   flyway:
     enabled: false
+
+jwt:
+  secret: ${JWT_SECRET:frivlegion-local-dev-only-secret-key-not-for-production-2026}

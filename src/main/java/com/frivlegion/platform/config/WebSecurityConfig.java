@@ -42,33 +42,28 @@ public class WebSecurityConfig {
 
     @Bean
     protected SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // Deny by default (#40): only the routes listed here are public; everything else needs a JWT.
         http.authorizeHttpRequests((auth) -> auth
+                // Authentication: registering is only for visitors without a session.
+                .requestMatchers(HttpMethod.POST, "/auth/register").anonymous()
                 .requestMatchers("/auth/**").permitAll()
+                // Public API root, HAL Explorer, ALPS metadata and error pages.
+                .requestMatchers(HttpMethod.GET, "/", "/explorer/**", "/profile/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                // Catalog and leaderboards are public; writing the catalog is for admins (#17).
                 .requestMatchers(HttpMethod.GET, "/games", "/games/**", "/scores", "/scores/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/scores").authenticated()
-                .requestMatchers("/gameStates", "/gameStates/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/players").hasRole("ADMIN")      // full listing: admins only (#25)
-                .requestMatchers(HttpMethod.GET, "/players/**").permitAll()       // public representation, no email
-                .requestMatchers(HttpMethod.POST, "/players").anonymous()
-                .requestMatchers(HttpMethod.POST, "/players/**").denyAll()
-                .requestMatchers(HttpMethod.PUT, "/players", "/players/**").denyAll()
-                .requestMatchers(HttpMethod.PATCH, "/players/*").authenticated()   // own profile or admin (#29)
-                .requestMatchers(HttpMethod.DELETE, "/players/*").authenticated()  // own account or admin (#29)
-                .requestMatchers(HttpMethod.PATCH, "/players", "/players/**").denyAll()
-                .requestMatchers(HttpMethod.DELETE, "/players", "/players/**").denyAll()
-                .requestMatchers(HttpMethod.POST, "/games", "/games/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/games", "/games/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/games", "/games/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/games", "/games/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/identity").authenticated()
-                .requestMatchers(HttpMethod.GET, "/records").permitAll()    // Allow listing public records
-                .requestMatchers(HttpMethod.GET, "/records/*").permitAll()  // Allow retrieving public records
-                .requestMatchers(HttpMethod.GET, "/*/*").authenticated()
-                .requestMatchers(HttpMethod.POST, "/*/*").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/*/*").authenticated()
-                .requestMatchers(HttpMethod.PATCH, "/*/*").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/*/*").authenticated()
-                .anyRequest().permitAll())
+                .requestMatchers("/games", "/games/**").hasRole("ADMIN")
+                // Players: registration only through /auth/register (#40), public profiles
+                // without email (#25), self-service PATCH/DELETE checked by PlayerEventHandler (#29).
+                .requestMatchers(HttpMethod.POST, "/players").permitAll() // answered 405 by PlayerEventHandler
+                .requestMatchers(HttpMethod.GET, "/players").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/players/**").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/players/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/players/*").authenticated()
+                .requestMatchers("/players", "/players/**").denyAll()
+                // Template records: public ones can be read without logging in.
+                .requestMatchers(HttpMethod.GET, "/records", "/records/*").permitAll()
+                .anyRequest().authenticated())
             .csrf((csrf) -> csrf.disable())
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling((exceptions) -> exceptions

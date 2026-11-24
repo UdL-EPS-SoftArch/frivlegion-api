@@ -8,7 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@SpringBootTest
+@SpringBootTest(properties = "jwt.secret=test-secret-key-that-is-long-enough-for-hmac-sha-signing-2026")
 @ActiveProfiles("flyio")
 class DBInitializationProfileTest {
 

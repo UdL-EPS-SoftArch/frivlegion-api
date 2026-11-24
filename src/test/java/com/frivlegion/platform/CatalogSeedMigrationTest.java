@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Default profile = Flyway enabled: the versioned catalog seed (V4) must be applied (#29). */
-@SpringBootTest
+@SpringBootTest(properties = "jwt.secret=test-secret-key-that-is-long-enough-for-hmac-sha-signing-2026")
 class CatalogSeedMigrationTest {
 
     @Autowired
