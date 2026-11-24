@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 
+import java.util.List;
 import java.util.Optional;
 
 @RepositoryRestResource
@@ -41,6 +42,9 @@ public interface GameStateRepository extends CrudRepository<GameState, Long>, Pa
     @RestResource(exported = false)
     @Query("SELECT s.player FROM GameState s WHERE s.id = :id")
     Optional<Player> findOwnerById(@Param("id") Long id);
+
+    @RestResource(exported = false)
+    List<GameState> findByPlayerId(Long playerId);
 
     @RestResource(exported = false)
     boolean existsByPlayerIdAndGameId(Long playerId, String gameId);

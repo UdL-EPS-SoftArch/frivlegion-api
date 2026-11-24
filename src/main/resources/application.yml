@@ -8,3 +8,8 @@ spring:
       enabled: false
   flyway:
     enabled: true
+frivlegion:
+  admin:
+    username: ${ADMIN_USERNAME:}
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}

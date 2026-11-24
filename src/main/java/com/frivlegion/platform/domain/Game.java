@@ -25,6 +25,9 @@ public class Game extends UriEntity<String> {
 
     private String thumbnailUrl;
 
+    /** URL loaded in the platform's iframe to play the game (#11). */
+    private String gameUrl;
+
     private String category;
 
     @Column(nullable = false)
