@@ -71,6 +71,11 @@ public class Player extends UriEntity<Long> implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    /** Administrators get ROLE_ADMIN (catalog management). Never settable through the API. */
+    @JsonIgnore
+    @Column(nullable = false)
+    private boolean admin = false;
+
     public void encodePassword() {
         if (rawPassword != null && !rawPassword.isBlank()) {
             this.passwordHash = passwordEncoder.encode(rawPassword);
@@ -93,7 +98,8 @@ public class Player extends UriEntity<Long> implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_USER");
+        return AuthorityUtils.commaSeparatedStringToAuthorityList(
+            admin ? "ROLE_USER,ROLE_ADMIN" : "ROLE_USER");
     }
 
     @Override
