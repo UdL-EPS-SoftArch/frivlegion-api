@@ -62,7 +62,7 @@ public class GameStateSavingStepDefs {
     @Then("the system should store the JSON payload in the database linked to the user and the game")
     public void theSystemShouldStoreTheJsonPayloadLinkedToTheUserAndTheGame() {
         GameState state = gameStateRepository
-            .findFirstByPlayerIdAndGameIdOrderByUpdatedAtDesc(player.getId(), game.getId())
+            .findByPlayerIdAndGameId(player.getId(), game.getId())
             .orElseThrow();
         assertEquals(savedPayload, state.getPayload());
         assertEquals(player.getId(), state.getPlayer().getId());
@@ -79,8 +79,8 @@ public class GameStateSavingStepDefs {
         authenticatePlayer();
         game = saveGame(slug(title), title);
 
-        gameStateRepository.deleteAll(
-            gameStateRepository.findByPlayerIdAndGameId(player.getId(), game.getId()));
+        gameStateRepository.findByPlayerIdAndGameId(player.getId(), game.getId())
+            .ifPresent(gameStateRepository::delete);
 
         savedPayload = "{\"level\":7,\"checkpoint\":\"castle\"}";
         savedState = new GameState();
@@ -110,6 +110,30 @@ public class GameStateSavingStepDefs {
     @Then("inject the state payload into the minigame iframe upon initialization")
     public void injectTheStatePayloadIntoTheMinigameIframe() throws Throwable {
         stepDefs.result.andExpect(jsonPath("$.payload", is(savedPayload)));
+    }
+
+    @When("the minigame SDK sends another {string} payload for {string}")
+    public void theMinigameSdkSendsAnotherPayloadFor(String event, String title) throws Throwable {
+        stepDefs.result = submitState("{\"level\":8,\"checkpoint\":\"tower\"}");
+    }
+
+    @Then("exactly one saved state exists for the player and {string}")
+    public void exactlyOneSavedStateExistsForThePlayerAnd(String title) {
+        // findByPlayerIdAndGameId returns an Optional, so a duplicate row would make it fail.
+        GameState state = gameStateRepository
+            .findByPlayerIdAndGameId(player.getId(), slug(title))
+            .orElseThrow();
+        assertEquals(savedPayload, state.getPayload(), "The original state must be left untouched");
+    }
+
+    @When("they look up their saved progress for {string}")
+    public void theyLookUpTheirSavedProgressFor(String title) throws Throwable {
+        stepDefs.result = stepDefs.mockMvc.perform(
+                get("/gameStates/search/findMine")
+                    .param("gameId", slug(title))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(AuthenticationStepDefs.authenticate()))
+            .andDo(print());
     }
 
     @Given("an unauthenticated visitor is playing a game")

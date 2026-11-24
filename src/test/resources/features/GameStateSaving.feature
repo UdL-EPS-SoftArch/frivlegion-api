@@ -14,3 +14,12 @@ Given an unauthenticated visitor is playing a game
 When the game attempts to trigger a "save_state" event
 Then the system should intercept the request
 And display a modal inviting the user to log in or register to save their progress
+Scenario: Saving progress twice for the same game keeps a single record
+Given a registered player has previously saved progress for "Puzzle Rush"
+When the minigame SDK sends another "save_state" payload for "Puzzle Rush"
+Then The response code is 409
+And exactly one saved state exists for the player and "Puzzle Rush"
+Scenario: Find my saved progress for a game
+Given a registered player has previously saved progress for "Puzzle Rush"
+When they look up their saved progress for "Puzzle Rush"
+Then the system should retrieve their latest saved state from the database

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -13,6 +14,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(
+    name = "uq_game_state_player_game", columnNames = {"player_id", "game_id"}))
 @EntityListeners(AuditingEntityListener.class)
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -32,6 +35,9 @@ public class GameState extends UriEntity<Long> {
     @JsonIdentityReference(alwaysAsId = true)
     private Game game;
 
+    public static final int MAX_PAYLOAD_LENGTH = 65_535;
+
+    @Length(max = MAX_PAYLOAD_LENGTH)
     @Column(columnDefinition = "TEXT")
     private String payload;
 
