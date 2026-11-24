@@ -87,13 +87,15 @@ public class RegisterStepDefs {
 
   @And("^It has been created a user with username \"([^\"]*)\" and email \"([^\"]*)\", the password is not returned$")
   public void itHasBeenCreatedAUserWithUsername(String username, String email) throws Throwable {
-    Player player = playerRepository.findByUsername(username).orElseThrow();
+    playerRepository.findByUsername(username).orElseThrow();
 
+    // The email is private: only the owner sees it, through /identity (#25).
     stepDefs.result = stepDefs.mockMvc.perform(
-            get(player.getUri())
+            get("/identity")
                     .accept(MediaType.APPLICATION_JSON)
                     .with(AuthenticationStepDefs.authenticate()))
         .andDo(print())
+        .andExpect(jsonPath("$.username", is(username)))
         .andExpect(jsonPath("$.email", is(email)))
         .andExpect(jsonPath("$.password").doesNotExist())
         .andExpect(jsonPath("$.passwordHash").doesNotExist());
