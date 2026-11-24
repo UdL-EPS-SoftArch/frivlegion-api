@@ -60,10 +60,23 @@ classDiagram
 
 ## Profiles and Default Data
 
-- `dev` and `test` seed a `player` account using `default-password`, overridable with `DEFAULT_PASSWORD`.
-- Run locally with the dev profile: `mvn spring-boot:run -Dspring-boot.run.profiles=dev`.
+- `dev` and `test` seed a `player` account and an `admin` account (ROLE_ADMIN) using `default-password`, overridable with `DEFAULT_PASSWORD`.
+- Run locally with the dev profile: `mvn spring-boot:run -Dspring-boot.run.profiles=dev` (it has its own development JWT secret).
 - The production profile (`flyio`) seeds no accounts and does not define a default password.
-- In production, create the first account through `POST /auth/register`. Administrative roles and provisioning are tracked separately in `05-github-issues.md` (ISSUE-6).
+- In production, players register through `POST /auth/register`; the administrator is created from the `ADMIN_*` secrets below.
+- The initial game catalog is seeded by the Flyway migration `V4__game_url_and_catalog_seed.sql` (not in the `dev`/`test` profiles, which use Hibernate `ddl-auto`).
+
+## Deployment (Fly.io)
+
+Pushing to `main` deploys the app `frivlegion` to Fly.io through GitHub Actions (`FLY_API_TOKEN` secret). Configure these Fly.io secrets **before** the first deploy (`fly secrets set NAME=value -a frivlegion`):
+
+| Secret | Required | Purpose |
+|---|---|---|
+| `JWT_SECRET` | **Yes** | Signs the JWT tokens. There is no fallback: the app refuses to start without it. Generate one with `openssl rand -base64 48`. |
+| `DATABASE_URL` | Recommended | `postgres://user:password@host[:port]/db[?sslmode=require]`. When set, the app uses PostgreSQL and Flyway migrates it; otherwise it falls back to in-memory H2 and **all data is lost whenever the machine stops** (`auto_stop_machines`). |
+| `ADMIN_USERNAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Optional | Creates (or promotes) that account as administrator at startup, so the catalog can be managed through `/games`. |
+
+CORS origins for production are in `src/main/resources/application-flyio.yml` (`allowed-origins`); update them with the real frontend URL.
 
 ## CI/CD and Testing
 
@@ -71,7 +84,7 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yml`) runs on every pull r
 
 ### Database initialization
 
-- Database schema is managed with Flyway migrations in `src/main/resources/db/migration/` (initial script: `V1__init_schema.sql`).
+- Database schema is managed with Flyway migrations in `src/main/resources/db/migration/` (`V1` initial schema, `V2` unique game state, `V3` admin role, `V4` game URL and catalog seed).
 - Migrations run automatically on application/test startup, so the CI environment initializes the basic schema before executing tests.
 
 ### Testing commands
