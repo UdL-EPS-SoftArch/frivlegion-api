@@ -1,6 +1,7 @@
 package com.frivlegion.platform.repository;
 
 import com.frivlegion.platform.domain.GameState;
+import com.frivlegion.platform.domain.Player;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -36,6 +37,10 @@ public interface GameStateRepository extends CrudRepository<GameState, Long>, Pa
 
     @RestResource(exported = false)
     Optional<GameState> findByPlayerIdAndGameId(Long playerId, String gameId);
+
+    @RestResource(exported = false)
+    @Query("SELECT s.player FROM GameState s WHERE s.id = :id")
+    Optional<Player> findOwnerById(@Param("id") Long id);
 
     @RestResource(exported = false)
     boolean existsByPlayerIdAndGameId(Long playerId, String gameId);

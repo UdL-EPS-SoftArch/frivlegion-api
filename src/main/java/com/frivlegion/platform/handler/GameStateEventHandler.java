@@ -35,17 +35,26 @@ public class GameStateEventHandler {
 
     @HandleBeforeSave
     public void handleGameStatePreSave(GameState gameState) {
-        requireOwner(gameState);
+        Player owner = persistedOwner(gameState);
+        requireOwner(owner);
+        gameState.setPlayer(owner);
     }
 
     @HandleBeforeDelete
     public void handleGameStatePreDelete(GameState gameState) {
-        requireOwner(gameState);
+        requireOwner(persistedOwner(gameState));
     }
 
-    private void requireOwner(GameState gameState) {
-        if (gameState.getPlayer() == null
-            || !currentPlayer().getUsername().equals(gameState.getPlayer().getUsername())) {
+    /** The owner stored in the database, never the one sent by the client. */
+    private Player persistedOwner(GameState gameState) {
+        if (gameState.getId() == null) {
+            return gameState.getPlayer();
+        }
+        return gameStateRepository.findOwnerById(gameState.getId()).orElse(null);
+    }
+
+    private void requireOwner(Player owner) {
+        if (owner == null || !currentPlayer().getUsername().equals(owner.getUsername())) {
             throw new AccessDeniedException("Only the owner can modify the game state");
         }
     }
