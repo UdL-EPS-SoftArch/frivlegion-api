@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 
-import java.util.List;
 import java.util.Optional;
 
 @RepositoryRestResource
@@ -28,12 +27,16 @@ public interface GameStateRepository extends CrudRepository<GameState, Long>, Pa
     @Query("SELECT s FROM GameState s WHERE s.id = :id AND (" + OWNERSHIP_CLAUSE + ")")
     Optional<GameState> findById(@Param("id") Long id);
 
-    @RestResource(exported = false)
-    List<GameState> findByPlayerIdAndGameIdOrderByUpdatedAtDesc(Long playerId, String gameId);
+    /**
+     * The authenticated player's saved state for a game:
+     * GET /gameStates/search/findMine?gameId={gameId} (404 when there is none).
+     */
+    @Query("SELECT s FROM GameState s WHERE s.game.id = :gameId AND s.player.username = ?#{authentication.name}")
+    Optional<GameState> findMine(@Param("gameId") String gameId);
 
     @RestResource(exported = false)
-    Optional<GameState> findFirstByPlayerIdAndGameIdOrderByUpdatedAtDesc(Long playerId, String gameId);
+    Optional<GameState> findByPlayerIdAndGameId(Long playerId, String gameId);
 
     @RestResource(exported = false)
-    List<GameState> findByPlayerIdAndGameId(Long playerId, String gameId);
+    boolean existsByPlayerIdAndGameId(Long playerId, String gameId);
 }

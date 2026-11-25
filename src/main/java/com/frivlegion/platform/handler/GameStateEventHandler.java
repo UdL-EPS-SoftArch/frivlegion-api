@@ -2,6 +2,8 @@ package com.frivlegion.platform.handler;
 
 import com.frivlegion.platform.domain.GameState;
 import com.frivlegion.platform.domain.Player;
+import com.frivlegion.platform.repository.GameStateRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
@@ -14,9 +16,21 @@ import org.springframework.stereotype.Component;
 @RepositoryEventHandler
 public class GameStateEventHandler {
 
+    private final GameStateRepository gameStateRepository;
+
+    public GameStateEventHandler(GameStateRepository gameStateRepository) {
+        this.gameStateRepository = gameStateRepository;
+    }
+
     @HandleBeforeCreate
     public void handleGameStatePreCreate(GameState gameState) {
-        gameState.setPlayer(currentPlayer());
+        Player player = currentPlayer();
+        gameState.setPlayer(player);
+        if (gameState.getGame() != null
+            && gameStateRepository.existsByPlayerIdAndGameId(player.getId(), gameState.getGame().getId())) {
+            throw new DataIntegrityViolationException(
+                "A game state already exists for this player and game; update it instead");
+        }
     }
 
     @HandleBeforeSave
