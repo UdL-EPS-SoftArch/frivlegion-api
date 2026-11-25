@@ -49,7 +49,7 @@ Feature: Register User
     Given I'm not logged in
     When I register a new user with username "user", email "user@sample.app" and password "pass"
     Then The response code is 400
-    And The error message is "length must be between 8 and 256"
+    And The error message is "size must be between 8 and 256"
     And I cannot login with username "user" and password "pass"
 
   Scenario: Register user with an existing email

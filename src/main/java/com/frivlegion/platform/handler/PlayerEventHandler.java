@@ -4,7 +4,6 @@ import com.frivlegion.platform.domain.Player;
 import com.frivlegion.platform.repository.GameStateRepository;
 import com.frivlegion.platform.repository.RecordRepository;
 import com.frivlegion.platform.repository.ScoreRepository;
-import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleAfterSave;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
@@ -13,7 +12,9 @@ import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 @Component
 @RepositoryEventHandler
@@ -31,9 +32,11 @@ public class PlayerEventHandler {
         this.recordRepository = recordRepository;
     }
 
+    /** Registration only goes through POST /auth/register, which validates and issues a JWT (#40). */
     @HandleBeforeCreate
     public void handlePlayerPreCreate(Player player) {
-        player.encodePassword();
+        throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED,
+            "Players are created through POST /auth/register");
     }
 
     /** Profile self-service (#29): only the player themselves or an admin. */
@@ -52,7 +55,6 @@ public class PlayerEventHandler {
         recordRepository.deleteAll(recordRepository.findByOwnedById(player.getId()));
     }
 
-    @HandleAfterCreate
     @HandleAfterSave
     public void clearRawPassword(Player player) {
         player.setRawPassword(null);

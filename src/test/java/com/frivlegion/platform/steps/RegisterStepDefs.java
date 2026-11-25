@@ -73,7 +73,7 @@ public class RegisterStepDefs {
   @When("^I register a new user with username \"([^\"]*)\", email \"([^\"]*)\" and password \"([^\"]*)\"$")
   public void iRegisterANewUserWithUsernameEmailAndPassword(String username, String email, String password) throws Throwable {
     stepDefs.result = stepDefs.mockMvc.perform(
-            post("/players")
+            post("/auth/register")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(stepDefs.mapper.writeValueAsString(Map.of(
                         "username", username,
