@@ -10,6 +10,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.rest.core.annotation.RestResource;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,7 @@ public interface RecordRepository extends CrudRepository<Record, Long>, PagingAn
     Page<Record> findByOwnedBy(@Param("user") Player owner, Pageable pageable);
 
     List<Record> findByName(String name);
+
+    @RestResource(exported = false)
+    List<Record> findByOwnedById(Long playerId);
 }

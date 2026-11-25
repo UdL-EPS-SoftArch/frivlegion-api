@@ -52,6 +52,8 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/players").anonymous()
                 .requestMatchers(HttpMethod.POST, "/players/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/players", "/players/**").denyAll()
+                .requestMatchers(HttpMethod.PATCH, "/players/*").authenticated()   // own profile or admin (#29)
+                .requestMatchers(HttpMethod.DELETE, "/players/*").authenticated()  // own account or admin (#29)
                 .requestMatchers(HttpMethod.PATCH, "/players", "/players/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/players", "/players/**").denyAll()
                 .requestMatchers(HttpMethod.POST, "/games", "/games/**").hasRole("ADMIN")
