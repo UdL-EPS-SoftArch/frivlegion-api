@@ -38,9 +38,12 @@ public class Player extends UriEntity<Long> implements UserDetails {
     @Column(unique = true, nullable = false)
     private String username;
 
+    /** Private: accepted on input, only returned by /identity and /auth/* (#25). */
     @NotBlank
     @Email
     @Column(unique = true, nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @ToString.Exclude
     private String email;
 
     @JsonIgnore

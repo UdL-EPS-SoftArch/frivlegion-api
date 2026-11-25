@@ -47,7 +47,8 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/games", "/games/**", "/scores", "/scores/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/scores").authenticated()
                 .requestMatchers("/gameStates", "/gameStates/**").authenticated()
-                .requestMatchers(HttpMethod.GET, "/players", "/players/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/players").hasRole("ADMIN")      // full listing: admins only (#25)
+                .requestMatchers(HttpMethod.GET, "/players/**").permitAll()       // public representation, no email
                 .requestMatchers(HttpMethod.POST, "/players").anonymous()
                 .requestMatchers(HttpMethod.POST, "/players/**").denyAll()
                 .requestMatchers(HttpMethod.PUT, "/players", "/players/**").denyAll()
