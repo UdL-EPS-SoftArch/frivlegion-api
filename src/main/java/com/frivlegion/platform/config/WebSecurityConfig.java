@@ -53,10 +53,10 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/players", "/players/**").denyAll()
                 .requestMatchers(HttpMethod.PATCH, "/players", "/players/**").denyAll()
                 .requestMatchers(HttpMethod.DELETE, "/players", "/players/**").denyAll()
-                .requestMatchers(HttpMethod.POST, "/games", "/games/**").denyAll()
-                .requestMatchers(HttpMethod.PUT, "/games", "/games/**").denyAll()
-                .requestMatchers(HttpMethod.PATCH, "/games", "/games/**").denyAll()
-                .requestMatchers(HttpMethod.DELETE, "/games", "/games/**").denyAll()
+                .requestMatchers(HttpMethod.POST, "/games", "/games/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/games", "/games/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/games", "/games/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/games", "/games/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/identity").authenticated()
                 .requestMatchers(HttpMethod.GET, "/records").permitAll()    // Allow listing public records
                 .requestMatchers(HttpMethod.GET, "/records/*").permitAll()  // Allow retrieving public records

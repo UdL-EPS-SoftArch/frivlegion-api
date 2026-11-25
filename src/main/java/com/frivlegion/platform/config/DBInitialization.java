@@ -39,6 +39,15 @@ public class DBInitialization {
             player.encodePassword();
             playerRepository.save(player);
         }
+        if (!playerRepository.existsByUsername("admin")) {
+            Player admin = new Player();
+            admin.setUsername("admin");
+            admin.setEmail("admin@sample.app");
+            admin.setRawPassword(defaultPassword);
+            admin.encodePassword();
+            admin.setAdmin(true);
+            playerRepository.save(admin);
+        }
         if (environment.matchesProfiles("test")) {
             if (!playerRepository.existsByUsername("test")) {
                 Player player = new Player();
