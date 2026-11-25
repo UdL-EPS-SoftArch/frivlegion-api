@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snake - FrivLegion Arcade</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #0d1527 0%, #060912 100%);
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .hud {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 12px;
+      padding: 10px 16px;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #10b981;
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+    }
+
+    .subtitle {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+    }
+
+    .stat-box {
+      text-align: right;
+    }
+
+    .stat-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+    }
+
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #f8fafc;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-value.accent {
+      color: #34d399;
+      text-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+    }
+
+    .board-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #080d1a;
+      border: 2px solid #10b981;
+      border-radius: 14px;
+      box-shadow: 0 0 28px rgba(16, 185, 129, 0.25), inset 0 0 24px rgba(16, 185, 129, 0.08);
+      padding: 6px;
+    }
+
+    canvas {
+      display: block;
+      border-radius: 8px;
+      background: #060a14;
+      max-width: min(82vw, 68vh, 440px);
+      max-height: min(82vw, 68vh, 440px);
+      width: 420px;
+      height: 420px;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 9, 18, 0.88);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      gap: 14px;
+      transition: opacity 0.2s ease;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .overlay-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #10b981;
+      text-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+    }
+
+    .overlay-title.gameover {
+      color: #f43f5e;
+      text-shadow: 0 0 16px rgba(244, 63, 94, 0.7);
+    }
+
+    .overlay-score {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+    }
+
+    .overlay-score strong {
+      color: #34d399;
+      font-size: 1.35rem;
+    }
+
+    .btn {
+      cursor: pointer;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #04130e;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 999px;
+      padding: 11px 28px;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.5);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.8);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .footer-hint {
+      font-size: 0.76rem;
+      color: #64748b;
+      text-align: center;
+    }
+
+    .key-pill {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(100, 116, 139, 0.4);
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hud">
+      <div class="title-block">
+        <div class="title">Neon Snake</div>
+        <div class="subtitle">+10 pts per energy orb</div>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Score</div>
+          <div class="stat-value accent" id="scoreDisplay">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Best</div>
+          <div class="stat-value" id="bestDisplay">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Speed</div>
+          <div class="stat-value" id="speedDisplay">1x</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-wrapper">
+      <canvas id="gameCanvas" width="420" height="420"></canvas>
+      <div class="overlay hidden" id="overlay">
+        <div class="overlay-title gameover" id="overlayTitle">Game Over</div>
+        <div class="overlay-score" id="overlayMessage">Final Score: <strong id="finalScore">0</strong></div>
+        <button class="btn" id="playAgainBtn" type="button">Play Again</button>
+      </div>
+    </div>
+
+    <div class="footer-hint">
+      Controls: <span class="key-pill">W</span> <span class="key-pill">A</span> <span class="key-pill">S</span> <span class="key-pill">D</span> or <span class="key-pill">Arrow Keys</span> to steer
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const GAME_ID = 'snake';
+      const GRID_SIZE = 20;
+      const TILE_SIZE = 21; // 20 * 21 = 420
+      const BASE_INTERVAL_MS = 135;
+      const MIN_INTERVAL_MS = 55;
+      const SPEED_STEP_MS = 4;
+
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const speedDisplay = document.getElementById('speedDisplay');
+      const overlay = document.getElementById('overlay');
+      const overlayTitle = document.getElementById('overlayTitle');
+      const finalScoreEl = document.getElementById('finalScore');
+      const playAgainBtn = document.getElementById('playAgainBtn');
+
+      let snake = [];
+      let direction = { x: 1, y: 0 };
+      let inputQueue = [];
+      let food = { x: 12, y: 10 };
+      let currentScore = 0;
+      let bestScore = 0;
+      let tickIntervalMs = BASE_INTERVAL_MS;
+      let timerId = null;
+      let isGameOver = false;
+
+      function emitScore(score) {
+        if (window.parent) {
+          window.parent.postMessage({
+            type: 'FRIVLEGION_SCORE',
+            gameId: GAME_ID,
+            score: score
+          }, '*');
+        }
+      }
+
+      function emitSaveState() {
+        if (window.parent) {
+          window.parent.postMessage({
+            type: 'FRIVLEGION_SAVE_STATE',
+            gameId: GAME_ID,
+            state: {
+              bestScore: bestScore,
+              lastScore: currentScore
+            }
+          }, '*');
+        }
+      }
+
+      window.addEventListener('message', function (event) {
+        const data = event.data;
+        if (!data || typeof data !== 'object') return;
+        if (data.type === 'FRIVLEGION_LOAD_STATE' && data.state) {
+          if (typeof data.state.bestScore === 'number' && data.state.bestScore > bestScore) {
+            bestScore = data.state.bestScore;
+            bestDisplay.textContent = String(bestScore);
+          }
+        }
+      });
+
+      function spawnFood() {
+        const occupied = new Set(snake.map(function (seg) { return seg.x + ',' + seg.y; }));
+        const available = [];
+        for (let x = 0; x < GRID_SIZE; x++) {
+          for (let y = 0; y < GRID_SIZE; y++) {
+            const key = x + ',' + y;
+            if (!occupied.has(key)) {
+              available.push({ x: x, y: y });
+            }
+          }
+        }
+        if (available.length === 0) {
+          return { x: 0, y: 0 };
+        }
+        return available[Math.floor(Math.random() * available.length)];
+      }
+
+      function updateHud() {
+        scoreDisplay.textContent = String(currentScore);
+        bestDisplay.textContent = String(bestScore);
+        const multiplier = (BASE_INTERVAL_MS / tickIntervalMs).toFixed(1);
+        speedDisplay.textContent = multiplier + 'x';
+      }
+
+      function scheduleNextTick() {
+        if (timerId) clearTimeout(timerId);
+        if (isGameOver) return;
+        timerId = setTimeout(function () {
+          step();
+          scheduleNextTick();
+        }, tickIntervalMs);
+      }
+
+      function resetGame() {
+        snake = [
+          { x: 6, y: 10 },
+          { x: 5, y: 10 },
+          { x: 4, y: 10 }
+        ];
+        direction = { x: 1, y: 0 };
+        inputQueue = [];
+        currentScore = 0;
+        tickIntervalMs = BASE_INTERVAL_MS;
+        isGameOver = false;
+        food = spawnFood();
+        overlay.classList.add('hidden');
+        updateHud();
+        draw();
+        scheduleNextTick();
+      }
+
+      function endGame() {
+        isGameOver = true;
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        if (currentScore > bestScore) {
+          bestScore = currentScore;
+        }
+        updateHud();
+        overlayTitle.textContent = 'Game Over';
+        finalScoreEl.textContent = String(currentScore);
+        overlay.classList.remove('hidden');
+
+        emitScore(currentScore);
+        emitSaveState();
+      }
+
+      function step() {
+        if (isGameOver) return;
+
+        if (inputQueue.length > 0) {
+          const nextDir = inputQueue.shift();
+          if (nextDir.x !== -direction.x || nextDir.y !== -direction.y) {
+            direction = nextDir;
+          }
+        }
+
+        const head = snake[0];
+        const nextHead = {
+          x: head.x + direction.x,
+          y: head.y + direction.y
+        };
+
+        // Wall collision check
+        if (
+          nextHead.x < 0 ||
+          nextHead.x >= GRID_SIZE ||
+          nextHead.y < 0 ||
+          nextHead.y >= GRID_SIZE
+        ) {
+          endGame();
+          return;
+        }
+
+        const willEat = nextHead.x === food.x && nextHead.y === food.y;
+        const bodyToCheck = willEat ? snake : snake.slice(0, snake.length - 1);
+
+        // Self collision check
+        for (let i = 0; i < bodyToCheck.length; i++) {
+          if (bodyToCheck[i].x === nextHead.x && bodyToCheck[i].y === nextHead.y) {
+            endGame();
+            return;
+          }
+        }
+
+        snake.unshift(nextHead);
+
+        if (willEat) {
+          currentScore += 10;
+          if (currentScore > bestScore) {
+            bestScore = currentScore;
+          }
+          tickIntervalMs = Math.max(MIN_INTERVAL_MS, tickIntervalMs - SPEED_STEP_MS);
+          food = spawnFood();
+          updateHud();
+          emitSaveState();
+        } else {
+          snake.pop();
+        }
+
+        draw();
+      }
+
+      function draw() {
+        ctx.fillStyle = '#060a14';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Subtle grid lines
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.38)';
+        ctx.lineWidth = 1;
+        for (let i = 1; i < GRID_SIZE; i++) {
+          const pos = i * TILE_SIZE;
+          ctx.beginPath();
+          ctx.moveTo(pos, 0);
+          ctx.lineTo(pos, canvas.height);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(0, pos);
+          ctx.lineTo(canvas.width, pos);
+          ctx.stroke();
+        }
+
+        // Draw food orb
+        const fx = food.x * TILE_SIZE + TILE_SIZE / 2;
+        const fy = food.y * TILE_SIZE + TILE_SIZE / 2;
+        ctx.save();
+        ctx.shadowColor = '#f43f5e';
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = '#fb7185';
+        ctx.beginPath();
+        ctx.arc(fx, fy, TILE_SIZE * 0.38, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Draw snake segments
+        for (let i = snake.length - 1; i >= 0; i--) {
+          const seg = snake[i];
+          const x = seg.x * TILE_SIZE + 2;
+          const y = seg.y * TILE_SIZE + 2;
+          const size = TILE_SIZE - 4;
+
+          ctx.save();
+          if (i === 0) {
+            ctx.shadowColor = '#10b981';
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = '#34d399';
+          } else {
+            ctx.fillStyle = i % 2 === 0 ? '#10b981' : '#059669';
+          }
+
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(x, y, size, size, 5);
+          } else {
+            ctx.rect(x, y, size, size);
+          }
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function queueDirection(newDir) {
+        const lastScheduled = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : direction;
+        // Prevent 180-degree reversal and duplicate directions
+        if (newDir.x === -lastScheduled.x && newDir.y === -lastScheduled.y) return;
+        if (newDir.x === lastScheduled.x && newDir.y === lastScheduled.y) return;
+        if (inputQueue.length < 2) {
+          inputQueue.push(newDir);
+        }
+      }
+
+      window.addEventListener('keydown', function (e) {
+        const key = e.key;
+        if (
+          key === 'ArrowUp' || key === 'ArrowDown' ||
+          key === 'ArrowLeft' || key === 'ArrowRight' ||
+          key === ' '
+        ) {
+          e.preventDefault();
+        }
+
+        if (isGameOver && (key === 'Enter' || key === ' ')) {
+          resetGame();
+          return;
+        }
+
+        switch (key) {
+          case 'ArrowUp':
+          case 'w':
+          case 'W':
+            queueDirection({ x: 0, y: -1 });
+            break;
+          case 'ArrowDown':
+          case 's':
+          case 'S':
+            queueDirection({ x: 0, y: 1 });
+            break;
+          case 'ArrowLeft':
+          case 'a':
+          case 'A':
+            queueDirection({ x: -1, y: 0 });
+            break;
+          case 'ArrowRight':
+          case 'd':
+          case 'D':
+            queueDirection({ x: 1, y: 0 });
+            break;
+        }
+      });
+
+      playAgainBtn.addEventListener('click', function () {
+        resetGame();
+      });
+
+      resetGame();
+    })();
+  </script>
+</body>
+</html>

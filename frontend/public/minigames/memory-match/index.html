@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match - FrivLegion Arcade</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1a1033 0%, #090614 100%);
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    .app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .hud {
+      width: 100%;
+      max-width: 460px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(19, 14, 38, 0.88);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      border-radius: 12px;
+      padding: 10px 16px;
+      box-shadow: 0 0 20px rgba(168, 85, 247, 0.18);
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #c084fc;
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.6);
+    }
+
+    .subtitle {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+
+    .stats {
+      display: flex;
+      gap: 16px;
+    }
+
+    .stat-box {
+      text-align: right;
+    }
+
+    .stat-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+    }
+
+    .stat-value {
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #f8fafc;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-value.accent {
+      color: #e879f9;
+      text-shadow: 0 0 8px rgba(232, 121, 249, 0.5);
+    }
+
+    .board-container {
+      position: relative;
+      width: min(86vw, 66vh, 430px);
+      height: min(86vw, 66vh, 430px);
+      background: rgba(15, 11, 29, 0.92);
+      border: 2px solid #a855f7;
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 0 28px rgba(168, 85, 247, 0.28), inset 0 0 24px rgba(168, 85, 247, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .grid {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      perspective: 800px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      outline: none;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.32s cubic-bezier(0.4, 0.2, 0.2, 1);
+    }
+
+    .card.flipped .card-inner,
+    .card.matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-front {
+      background: linear-gradient(145deg, #1e1638 0%, #120d24 100%);
+      border: 1.5px solid rgba(168, 85, 247, 0.45);
+      box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.15);
+      color: rgba(192, 132, 252, 0.5);
+      font-size: 1.4rem;
+      font-weight: 800;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .card:hover:not(.flipped):not(.matched) .card-front {
+      border-color: #e879f9;
+      box-shadow: 0 0 12px rgba(232, 121, 249, 0.35);
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      background: linear-gradient(145deg, #2b174d 0%, #190e30 100%);
+      border: 2px solid #c084fc;
+      box-shadow: 0 0 14px rgba(192, 132, 252, 0.35);
+      font-size: 2rem;
+    }
+
+    .card.matched .card-back {
+      border-color: #22d3ee;
+      background: linear-gradient(145deg, #112a3d 0%, #0d1d2e 100%);
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.45);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 6, 20, 0.9);
+      backdrop-filter: blur(5px);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+      gap: 14px;
+      transition: opacity 0.22s ease;
+      z-index: 10;
+    }
+
+    .overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .overlay-title {
+      font-size: 1.85rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #22d3ee;
+      text-shadow: 0 0 16px rgba(34, 211, 238, 0.75);
+    }
+
+    .overlay-details {
+      font-size: 1rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .overlay-details strong {
+      color: #e879f9;
+      font-size: 1.3rem;
+    }
+
+    .btn {
+      cursor: pointer;
+      background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 999px;
+      padding: 11px 28px;
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.55);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 0 24px rgba(192, 132, 252, 0.85);
+    }
+
+    .footer-hint {
+      font-size: 0.76rem;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hud">
+      <div class="title-block">
+        <div class="title">Memory Match</div>
+        <div class="subtitle">Match all 8 pairs in fewer moves</div>
+      </div>
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Score</div>
+          <div class="stat-value accent" id="scoreDisplay">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Moves</div>
+          <div class="stat-value" id="movesDisplay">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Pairs</div>
+          <div class="stat-value" id="pairsDisplay">0/8</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-container">
+      <div class="grid" id="cardGrid"></div>
+
+      <div class="overlay hidden" id="overlay">
+        <div class="overlay-title">Victory!</div>
+        <div class="overlay-details">
+          All 8 pairs matched in <span id="finalMoves">0</span> moves!<br />
+          Final Score: <strong id="finalScore">0</strong>
+        </div>
+        <button class="btn" id="playAgainBtn" type="button">Play Again</button>
+      </div>
+    </div>
+
+    <div class="footer-hint">
+      Click any two cards to reveal their symbols and find matching pairs.
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const GAME_ID = 'memory-match';
+      const SYMBOLS = [
+        '\uD83D\uDE80', // Rocket
+        '\u26A1',       // High Voltage
+        '\uD83D\uDC8E', // Gem Stone
+        '\uD83D\uDD25', // Fire
+        '\uD83C\uDF1F', // Glowing Star
+        '\uD83C\uDFAE', // Gamepad
+        '\uD83D\uDC7E', // Alien Monster
+        '\uD83C\uDFC6'  // Trophy
+      ];
+
+      const cardGrid = document.getElementById('cardGrid');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const movesDisplay = document.getElementById('movesDisplay');
+      const pairsDisplay = document.getElementById('pairsDisplay');
+      const overlay = document.getElementById('overlay');
+      const finalMovesEl = document.getElementById('finalMoves');
+      const finalScoreEl = document.getElementById('finalScore');
+      const playAgainBtn = document.getElementById('playAgainBtn');
+
+      let deck = [];
+      let flippedIndices = [];
+      let matchedIndices = new Set();
+      let moves = 0;
+      let currentScore = 0;
+      let bestScore = 0;
+      let isLocked = false;
+
+      function calculateScore(matchesCount, movesCount) {
+        if (matchesCount === 0) return 0;
+        const basePoints = matchesCount * 100;
+        const extraMoves = Math.max(0, movesCount - matchesCount);
+        const efficiencyBonus = Math.max(0, matchesCount * 40 - extraMoves * 15);
+        return basePoints + efficiencyBonus;
+      }
+
+      function emitScore(score) {
+        if (window.parent) {
+          window.parent.postMessage({
+            type: 'FRIVLEGION_SCORE',
+            gameId: GAME_ID,
+            score: score
+          }, '*');
+        }
+      }
+
+      function emitSaveState() {
+        if (window.parent) {
+          window.parent.postMessage({
+            type: 'FRIVLEGION_SAVE_STATE',
+            gameId: GAME_ID,
+            state: {
+              deck: deck,
+              matchedIndices: Array.from(matchedIndices),
+              moves: moves,
+              currentScore: currentScore,
+              bestScore: bestScore
+            }
+          }, '*');
+        }
+      }
+
+      window.addEventListener('message', function (event) {
+        const data = event.data;
+        if (!data || typeof data !== 'object') return;
+        if (data.type === 'FRIVLEGION_LOAD_STATE' && data.state) {
+          const st = data.state;
+          if (typeof st.bestScore === 'number') {
+            bestScore = Math.max(bestScore, st.bestScore);
+          }
+          if (
+            Array.isArray(st.deck) &&
+            st.deck.length === 16 &&
+            Array.isArray(st.matchedIndices) &&
+            st.matchedIndices.length < 16
+          ) {
+            deck = st.deck.slice();
+            matchedIndices = new Set(st.matchedIndices);
+            moves = typeof st.moves === 'number' ? st.moves : 0;
+            currentScore = calculateScore(matchedIndices.size / 2, moves);
+            flippedIndices = [];
+            isLocked = false;
+            overlay.classList.add('hidden');
+            renderGrid();
+            updateHud();
+          }
+        }
+      });
+
+      function shuffle(array) {
+        const arr = array.slice();
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = temp;
+        }
+        return arr;
+      }
+
+      function updateHud() {
+        const pairs = matchedIndices.size / 2;
+        scoreDisplay.textContent = String(currentScore);
+        movesDisplay.textContent = String(moves);
+        pairsDisplay.textContent = pairs + '/8';
+      }
+
+      function renderGrid() {
+        cardGrid.innerHTML = '';
+        deck.forEach(function (symbol, index) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'card';
+          btn.setAttribute('data-index', String(index));
+          btn.setAttribute('aria-label', 'Card ' + (index + 1));
+
+          if (matchedIndices.has(index)) {
+            btn.classList.add('matched');
+          } else if (flippedIndices.indexOf(index) !== -1) {
+            btn.classList.add('flipped');
+          }
+
+          const inner = document.createElement('div');
+          inner.className = 'card-inner';
+
+          const front = document.createElement('div');
+          front.className = 'card-face card-front';
+          front.textContent = '?';
+
+          const back = document.createElement('div');
+          back.className = 'card-face card-back';
+          back.textContent = symbol;
+
+          inner.appendChild(front);
+          inner.appendChild(back);
+          btn.appendChild(inner);
+
+          btn.addEventListener('click', function () {
+            onCardClick(index, btn);
+          });
+
+          cardGrid.appendChild(btn);
+        });
+      }
+
+      function onCardClick(index, cardEl) {
+        if (isLocked) return;
+        if (matchedIndices.has(index)) return;
+        if (flippedIndices.indexOf(index) !== -1) return;
+
+        flippedIndices.push(index);
+        cardEl.classList.add('flipped');
+
+        if (flippedIndices.length === 2) {
+          moves += 1;
+          const idxA = flippedIndices[0];
+          const idxB = flippedIndices[1];
+
+          if (deck[idxA] === deck[idxB]) {
+            matchedIndices.add(idxA);
+            matchedIndices.add(idxB);
+            flippedIndices = [];
+
+            const cardA = cardGrid.children[idxA];
+            const cardB = cardGrid.children[idxB];
+            if (cardA) {
+              cardA.classList.remove('flipped');
+              cardA.classList.add('matched');
+            }
+            if (cardB) {
+              cardB.classList.remove('flipped');
+              cardB.classList.add('matched');
+            }
+
+            const pairs = matchedIndices.size / 2;
+            currentScore = calculateScore(pairs, moves);
+            if (currentScore > bestScore) {
+              bestScore = currentScore;
+            }
+            updateHud();
+            emitSaveState();
+
+            if (pairs === 8) {
+              onWin();
+            }
+          } else {
+            isLocked = true;
+            currentScore = calculateScore(matchedIndices.size / 2, moves);
+            updateHud();
+            setTimeout(function () {
+              const cardA = cardGrid.children[idxA];
+              const cardB = cardGrid.children[idxB];
+              if (cardA) cardA.classList.remove('flipped');
+              if (cardB) cardB.classList.remove('flipped');
+              flippedIndices = [];
+              isLocked = false;
+            }, 680);
+          }
+        }
+      }
+
+      function onWin() {
+        finalMovesEl.textContent = String(moves);
+        finalScoreEl.textContent = String(currentScore);
+        overlay.classList.remove('hidden');
+        emitScore(currentScore);
+        emitSaveState();
+      }
+
+      function initGame() {
+        deck = shuffle(SYMBOLS.concat(SYMBOLS));
+        flippedIndices = [];
+        matchedIndices = new Set();
+        moves = 0;
+        currentScore = 0;
+        isLocked = false;
+        overlay.classList.add('hidden');
+        renderGrid();
+        updateHud();
+      }
+
+      playAgainBtn.addEventListener('click', function () {
+        initGame();
+      });
+
+      initGame();
+    })();
+  </script>
+</body>
+</html>
