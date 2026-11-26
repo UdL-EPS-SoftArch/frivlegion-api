@@ -15,6 +15,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.Instant;
 
+/**
+ * Retained user-authored note resource (PRIVATE by default, optionally PUBLIC).
+ * It is not a minigame artifact: the game domain uses Game, Score and GameState.
+ * Kept because it is part of the existing public API and BDD contract (issue #33).
+ */
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Data

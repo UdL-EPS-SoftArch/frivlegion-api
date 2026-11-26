@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.frivlegion.platform.FrivLegionApplication;
+import com.frivlegion.platform.domain.Player;
+import com.frivlegion.platform.repository.PlayerRepository;
 import tools.jackson.databind.ObjectMapper;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
@@ -14,6 +16,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.spring.CucumberContextConfiguration;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootContextLoader;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,6 +28,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.function.Supplier;
 
 @ContextConfiguration(
 	classes = {FrivLegionApplication.class},
@@ -52,6 +58,18 @@ public class StepDefs {
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
         AuthenticationStepDefs.setMockMvc(this.mockMvc);
+    }
+
+    protected <T> T asAdmin(Supplier<T> action) {
+        Player admin = wac.getBean(PlayerRepository.class).findByUsername("admin").orElseThrow();
+        var previous = SecurityContextHolder.getContext().getAuthentication();
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(admin, "fixture", admin.getAuthorities()));
+        try {
+            return action.get();
+        } finally {
+            SecurityContextHolder.getContext().setAuthentication(previous);
+        }
     }
 
     @Then("^The response code is (\\d+)$")

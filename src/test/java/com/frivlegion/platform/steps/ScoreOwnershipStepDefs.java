@@ -24,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ScoreOwnershipStepDefs {
 
     private static final String PASSWORD = "password123";
+    private static final String ADMIN = "admin";
+    private static final String ADMIN_PASSWORD = "password";
 
     private final StepDefs stepDefs;
     private final PlayerRepository playerRepository;
@@ -110,6 +112,26 @@ public class ScoreOwnershipStepDefs {
         stepDefs.result.andExpect(status().is2xxSuccessful());
     }
 
+    @When("an authenticated player sends a DELETE to the scores collection")
+    public void sendsBulkDelete() throws Throwable {
+        loginAs("score-owner");
+        stepDefs.result = stepDefs.mockMvc.perform(
+                delete("/scores")
+                    .accept(MediaType.APPLICATION_JSON)
+                    .with(AuthenticationStepDefs.authenticate()))
+            .andDo(print());
+    }
+
+    @Then("bulk score deletion is not available")
+    public void bulkScoreDeletionIsNotAvailable() throws Throwable {
+        stepDefs.result.andExpect(status().isNotFound());
+    }
+
+    @Then("the score deletion is not exported")
+    public void theScoreDeletionIsNotExported() throws Throwable {
+        stepDefs.result.andExpect(status().isMethodNotAllowed());
+    }
+
     @Then("the score has value {int} and belongs to {string}")
     public void theScoreHasValueAndBelongsTo(int value, String username) {
         Score stored = scoreRepository.findById(score.getId()).orElseThrow();
@@ -118,10 +140,25 @@ public class ScoreOwnershipStepDefs {
     }
 
     private void loginAs(String username) {
-        ensurePlayer(username);
+        if (ADMIN.equals(username)) {
+            ensureAdmin();
+            AuthenticationStepDefs.currentPassword = ADMIN_PASSWORD;
+        } else {
+            ensurePlayer(username);
+            AuthenticationStepDefs.currentPassword = PASSWORD;
+        }
         AuthenticationStepDefs.currentUsername = username;
-        AuthenticationStepDefs.currentPassword = PASSWORD;
         AuthenticationStepDefs.currentToken = null;
+    }
+
+    private void ensureAdmin() {
+        Player admin = playerRepository.findByUsername(ADMIN).orElseGet(Player::new);
+        admin.setUsername(ADMIN);
+        admin.setEmail("admin@sample.app");
+        admin.setRawPassword(ADMIN_PASSWORD);
+        admin.encodePassword();
+        admin.setAdmin(true);
+        playerRepository.save(admin);
     }
 
     private Player ensurePlayer(String username) {
@@ -141,6 +178,6 @@ public class ScoreOwnershipStepDefs {
         game.setThumbnailUrl("https://example.com/" + gameId + ".png");
         game.setCategory("Casual");
         game.setIsActive(true);
-        return gameRepository.save(game);
+        return stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 }

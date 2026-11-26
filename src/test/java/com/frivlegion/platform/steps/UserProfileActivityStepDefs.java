@@ -102,7 +102,7 @@ public class UserProfileActivityStepDefs {
         game.setThumbnailUrl("https://example.com/" + id + ".png");
         game.setCategory("Casual");
         game.setIsActive(true);
-        return gameRepository.save(game);
+        return stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 
     private void saveScore(Game game, int value) {

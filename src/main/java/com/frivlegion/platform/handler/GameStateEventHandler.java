@@ -3,13 +3,12 @@ package com.frivlegion.platform.handler;
 import com.frivlegion.platform.domain.GameState;
 import com.frivlegion.platform.domain.Player;
 import com.frivlegion.platform.repository.GameStateRepository;
+import com.frivlegion.platform.security.CurrentPlayer;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,14 +16,16 @@ import org.springframework.stereotype.Component;
 public class GameStateEventHandler {
 
     private final GameStateRepository gameStateRepository;
+    private final CurrentPlayer currentPlayer;
 
-    public GameStateEventHandler(GameStateRepository gameStateRepository) {
+    public GameStateEventHandler(GameStateRepository gameStateRepository, CurrentPlayer currentPlayer) {
         this.gameStateRepository = gameStateRepository;
+        this.currentPlayer = currentPlayer;
     }
 
     @HandleBeforeCreate
     public void handleGameStatePreCreate(GameState gameState) {
-        Player player = currentPlayer();
+        Player player = currentPlayer.require();
         gameState.setPlayer(player);
         if (gameState.getGame() != null
             && gameStateRepository.existsByPlayerIdAndGameId(player.getId(), gameState.getGame().getId())) {
@@ -36,13 +37,13 @@ public class GameStateEventHandler {
     @HandleBeforeSave
     public void handleGameStatePreSave(GameState gameState) {
         Player owner = persistedOwner(gameState);
-        requireOwner(owner);
+        currentPlayer.requireOwner(owner);
         gameState.setPlayer(owner);
     }
 
     @HandleBeforeDelete
     public void handleGameStatePreDelete(GameState gameState) {
-        requireOwner(persistedOwner(gameState));
+        currentPlayer.requireOwner(persistedOwner(gameState));
     }
 
     /** The owner stored in the database, never the one sent by the client. */
@@ -51,19 +52,5 @@ public class GameStateEventHandler {
             return gameState.getPlayer();
         }
         return gameStateRepository.findOwnerById(gameState.getId()).orElse(null);
-    }
-
-    private void requireOwner(Player owner) {
-        if (owner == null || !currentPlayer().getUsername().equals(owner.getUsername())) {
-            throw new AccessDeniedException("Only the owner can modify the game state");
-        }
-    }
-
-    private Player currentPlayer() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof Player)) {
-            throw new AccessDeniedException("Authentication required");
-        }
-        return (Player) principal;
     }
 }

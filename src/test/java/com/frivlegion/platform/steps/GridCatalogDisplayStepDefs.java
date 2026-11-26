@@ -103,6 +103,6 @@ public class GridCatalogDisplayStepDefs {
         game.setThumbnailUrl(thumbnailUrl);
         game.setCategory(category);
         game.setIsActive(true);
-        return gameRepository.save(game);
+        return stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 }

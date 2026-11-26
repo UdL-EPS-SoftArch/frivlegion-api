@@ -76,6 +76,6 @@ public class GameCatalogSearchStepDefs {
         game.setThumbnailUrl("https://example.com/" + id + ".png");
         game.setCategory(category);
         game.setIsActive(true);
-        gameRepository.save(game);
+        stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 }

@@ -17,3 +17,9 @@ Feature: Game state ownership protection
     When "state-owner" sends a PATCH to that game state with payload "updated" and owner "state-intruder"
     Then the request is successful
     And the game state has payload "updated" and belongs to "state-owner"
+
+  Scenario: An admin can update another player's game state
+    Given a game state owned by "state-owner" exists for game "state-ownership-game"
+    When "admin" sends a PATCH to that game state with payload "admin-update" and owner "state-owner"
+    Then the game state request is successful
+    And the game state has payload "admin-update" and belongs to "state-owner"
