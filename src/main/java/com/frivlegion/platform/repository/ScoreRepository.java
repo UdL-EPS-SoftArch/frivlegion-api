@@ -23,4 +23,24 @@ public interface ScoreRepository extends CrudRepository<Score, Long>, PagingAndS
     List<Score> findByPlayerIdAndGameId(Long playerId, String gameId);
 
     Optional<Score> findFirstByPlayerIdAndGameIdOrderByScoreValueDesc(Long playerId, String gameId);
+
+    @Override
+    @RestResource(exported = false)
+    void deleteById(Long id);
+
+    @Override
+    @RestResource(exported = false)
+    void delete(Score entity);
+
+    @Override
+    @RestResource(exported = false)
+    void deleteAll();
+
+    @Override
+    @RestResource(exported = false)
+    void deleteAll(Iterable<? extends Score> entities);
+
+    @Override
+    @RestResource(exported = false)
+    void deleteAllById(Iterable<? extends Long> ids);
 }

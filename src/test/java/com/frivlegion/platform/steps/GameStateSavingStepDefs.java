@@ -206,7 +206,7 @@ public class GameStateSavingStepDefs {
         game.setThumbnailUrl("https://example.com/" + id + ".png");
         game.setCategory("Adventure");
         game.setIsActive(true);
-        return gameRepository.save(game);
+        return stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 
     private String slug(String value) {

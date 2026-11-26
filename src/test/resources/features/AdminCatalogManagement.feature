@@ -21,6 +21,13 @@ Feature: Role-based catalog management (Admin vs. standard player)
     Then The response code is 403
     And the catalog does not contain the game "player-game"
 
+  Scenario: A standard player cannot remove a game
+    Given the catalog game "player-remove-game" exists
+    And I login as "player" with password "password"
+    When I remove the catalog game "player-remove-game"
+    Then the request is forbidden
+    And the catalog contains the game "player-remove-game"
+
   Scenario: An anonymous visitor cannot add a game
     Given I'm not logged in
     When I add the game "anonymous-game" titled "Anonymous Game" to the catalog

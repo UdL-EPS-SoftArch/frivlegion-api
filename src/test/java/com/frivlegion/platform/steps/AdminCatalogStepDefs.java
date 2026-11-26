@@ -37,7 +37,7 @@ public class AdminCatalogStepDefs {
         game.setTitle("Old Game");
         game.setCategory("Puzzle");
         game.setIsActive(true);
-        gameRepository.save(game);
+        stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 
     @When("I add the game {string} titled {string} to the catalog")

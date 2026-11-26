@@ -19,10 +19,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class GameStateOwnershipStepDefs {
 
     private static final String PASSWORD = "password123";
+    private static final String ADMIN = "admin";
+    private static final String ADMIN_PASSWORD = "password";
 
     private final StepDefs stepDefs;
     private final PlayerRepository playerRepository;
@@ -89,6 +92,11 @@ public class GameStateOwnershipStepDefs {
         assertTrue(status == 403 || status == 404, "Expected 403 or 404 but got " + status);
     }
 
+    @Then("the game state request is successful")
+    public void theGameStateRequestIsSuccessful() throws Throwable {
+        stepDefs.result.andExpect(status().is2xxSuccessful());
+    }
+
     @Then("the game state has payload {string} and belongs to {string}")
     public void theGameStateHasPayloadAndBelongsTo(String payload, String username) {
         GameState stored = gameStateRepository
@@ -100,10 +108,25 @@ public class GameStateOwnershipStepDefs {
     }
 
     private void loginAs(String username) {
-        ensurePlayer(username);
+        if (ADMIN.equals(username)) {
+            ensureAdmin();
+            AuthenticationStepDefs.currentPassword = ADMIN_PASSWORD;
+        } else {
+            ensurePlayer(username);
+            AuthenticationStepDefs.currentPassword = PASSWORD;
+        }
         AuthenticationStepDefs.currentUsername = username;
-        AuthenticationStepDefs.currentPassword = PASSWORD;
         AuthenticationStepDefs.currentToken = null;
+    }
+
+    private void ensureAdmin() {
+        Player admin = playerRepository.findByUsername(ADMIN).orElseGet(Player::new);
+        admin.setUsername(ADMIN);
+        admin.setEmail("admin@sample.app");
+        admin.setRawPassword(ADMIN_PASSWORD);
+        admin.encodePassword();
+        admin.setAdmin(true);
+        playerRepository.save(admin);
     }
 
     private Player ensurePlayer(String username) {
@@ -123,6 +146,6 @@ public class GameStateOwnershipStepDefs {
         game.setThumbnailUrl("https://example.com/" + gameId + ".png");
         game.setCategory("Casual");
         game.setIsActive(true);
-        return gameRepository.save(game);
+        return stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 }

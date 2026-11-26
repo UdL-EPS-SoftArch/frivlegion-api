@@ -78,7 +78,7 @@ public class LeaderboardQueryStepDefs {
         game.setThumbnailUrl("https://example.com/" + id + ".png");
         game.setCategory("Casual");
         game.setIsActive(true);
-        gameRepository.save(game);
+        stepDefs.asAdmin(() -> gameRepository.save(game));
     }
 
     private void saveScore(String username, int value) {

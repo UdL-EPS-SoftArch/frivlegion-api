@@ -35,7 +35,8 @@ public class MinigameLaunchStepDefs {
         launchedGame.setThumbnailUrl("https://example.com/launch-game.png");
         launchedGame.setCategory("Action");
         launchedGame.setIsActive(true);
-        launchedGame = gameRepository.save(launchedGame);
+        Game gameToSave = launchedGame;
+        launchedGame = stepDefs.asAdmin(() -> gameRepository.save(gameToSave));
     }
 
     @When("they click on a specific game thumbnail")

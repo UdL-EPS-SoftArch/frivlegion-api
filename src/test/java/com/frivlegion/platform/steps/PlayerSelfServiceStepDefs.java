@@ -60,7 +60,8 @@ public class PlayerSelfServiceStepDefs {
         game.setId("self-service-game");
         game.setTitle("Self Service Game");
         game.setIsActive(true);
-        game = gameRepository.save(game);
+        Game gameToSave = game;
+        game = stepDefs.asAdmin(() -> gameRepository.save(gameToSave));
 
         Score score = new Score();
         score.setPlayer(player);
