@@ -11,14 +11,13 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.http.MediaType;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class LeaderboardQueryStepDefs {
@@ -28,8 +27,7 @@ public class LeaderboardQueryStepDefs {
     private final PlayerRepository playerRepository;
     private final ScoreRepository scoreRepository;
 
-    private Game leaderboardGame;
-    private List<Score> leaderboard = new ArrayList<>();
+    private String gameId;
 
     public LeaderboardQueryStepDefs(StepDefs stepDefs, GameRepository gameRepository,
                                     PlayerRepository playerRepository, ScoreRepository scoreRepository) {
@@ -39,50 +37,40 @@ public class LeaderboardQueryStepDefs {
         this.scoreRepository = scoreRepository;
     }
 
-    @Given("there are recorded scores for the game {string}")
-    public void thereAreRecordedScoresForTheGame(String title) {
-        leaderboardGame = saveGame(slug(title), title);
+    @Given("scores of 800, 1000 and 1200 are recorded for game {string}")
+    public void scoresAreRecordedForGame(String title) {
+        gameId = slug(title);
+        saveGame(gameId, title);
+        scoreRepository.deleteAll(scoreRepository.findByGameId(gameId));
 
-        scoreRepository.deleteAll(scoreRepository.findByGameId(leaderboardGame.getId()));
-
-        Player alice = savePlayer("lb-alice", "lb-alice@example.com");
-        Player bob = savePlayer("lb-bob", "lb-bob@example.com");
-        Player carol = savePlayer("lb-carol", "lb-carol@example.com");
-
-        saveScore(alice, leaderboardGame, 1000);
-        saveScore(bob, leaderboardGame, 1200);
-        saveScore(carol, leaderboardGame, 800);
+        saveScore("lb-alice", 1000);
+        saveScore("lb-bob", 1200);
+        saveScore("lb-carol", 800);
     }
 
-    @When("a player accesses the {string} leaderboard view")
-    public void aPlayerAccessesTheLeaderboardView(String title) throws Throwable {
-        leaderboardGame = gameRepository.findById(slug(title)).orElseThrow();
-        leaderboard = scoreRepository.findByGameIdOrderByScoreValueDesc(leaderboardGame.getId());
-
+    @When("I request the leaderboard for game {string}")
+    public void iRequestTheLeaderboardForGame(String title) throws Throwable {
         stepDefs.result = stepDefs.mockMvc.perform(
-                get("/scores/search/findByGameIdOrderByScoreValueDesc?gameId={id}", leaderboardGame.getId())
-                    .accept(MediaType.APPLICATION_JSON))
-            .andDo(print());
+                get("/scores/search/findByGameIdOrderByScoreValueDesc?gameId={id}", slug(title))
+                    .accept(MediaType.APPLICATION_JSON));
     }
 
-    @Then("the system should retrieve the top scores")
-    public void theSystemShouldRetrieveTheTopScores() throws Throwable {
-        stepDefs.result.andExpect(status().isOk());
-        assertFalse(leaderboard.isEmpty());
+    @Then("the leaderboard response lists the scores in descending order")
+    public void theLeaderboardResponseListsTheScoresInDescendingOrder() throws Throwable {
+        stepDefs.result.andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded.scores[*].scoreValue", contains(1200, 1000, 800)));
     }
 
-    @Then("display a descending ordered list with the top players and their scores")
-    public void displayADescendingOrderedListWithTheTopPlayersAndTheirScores() {
-        for (int i = 1; i < leaderboard.size(); i++) {
-            assertTrue(leaderboard.get(i - 1).getScoreValue() >= leaderboard.get(i).getScoreValue());
-        }
-        leaderboard.forEach(score -> {
-            assertNotNull(score.getPlayer());
-            assertNotNull(score.getPlayer().getUsername());
-        });
+    @Then("every leaderboard entry exposes its player and score value")
+    public void everyLeaderboardEntryExposesItsPlayerAndScoreValue() throws Throwable {
+        stepDefs.result.andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded.scores[*]._links.player.href",
+                everyItem(not(emptyOrNullString()))))
+            .andExpect(jsonPath("$._embedded.scores[*].scoreValue",
+                everyItem(notNullValue())));
     }
 
-    private Game saveGame(String id, String title) {
+    private void saveGame(String id, String title) {
         Game game = gameRepository.findById(id).orElseGet(Game::new);
         game.setId(id);
         game.setTitle(title);
@@ -90,21 +78,19 @@ public class LeaderboardQueryStepDefs {
         game.setThumbnailUrl("https://example.com/" + id + ".png");
         game.setCategory("Casual");
         game.setIsActive(true);
-        return gameRepository.save(game);
+        gameRepository.save(game);
     }
 
-    private Player savePlayer(String username, String email) {
+    private void saveScore(String username, int value) {
         Player player = playerRepository.findByUsername(username).orElseGet(Player::new);
         player.setUsername(username);
-        player.setEmail(email);
+        player.setEmail(username + "@example.com");
         player.setPasswordHash("not-used");
-        return playerRepository.save(player);
-    }
+        player = playerRepository.save(player);
 
-    private void saveScore(Player player, Game game, int value) {
         Score score = new Score();
         score.setPlayer(player);
-        score.setGame(game);
+        score.setGame(gameRepository.findById(gameId).orElseThrow());
         score.setScoreValue(value);
         scoreRepository.save(score);
     }
